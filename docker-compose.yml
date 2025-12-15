@@ -1,0 +1,10 @@
+services:
+  vosk:
+    image: alphacep/kaldi-en:latest
+    ports:
+      - "2700:2700"
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"

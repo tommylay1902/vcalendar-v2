@@ -15,7 +15,9 @@ function App() {
   return (
     <div className="container">
       {!recording ? (
-        <button onClick={startRecording}>Start Recording</button>
+        <button onClick={startRecording} className="w">
+          Start Recording
+        </button>
       ) : (
         <button onClick={stopRecording}>Stop Recording</button>
       )}

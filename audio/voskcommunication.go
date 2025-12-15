@@ -19,33 +19,112 @@ type VoskCommunication struct {
 	ws          *websocket.Conn
 	stream      *portaudio.Stream
 	audioBuffer []int16
+	config      map[string]any
 }
 
-func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16) *VoskCommunication {
+func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any) *VoskCommunication {
 	return &VoskCommunication{
 		ctx:         ctx,
 		ws:          ws,
 		stream:      stream,
 		audioBuffer: audioBuffer,
+		config:      config,
 	}
 }
 
-func (vc *VoskCommunication) SendAudioToWs(messageChan chan any, errorChan chan error, doneChan chan struct{}) {
+func (vc *VoskCommunication) StartVoskCommunication() {
+	writeCtx, wsCancel := context.WithTimeout(vc.ctx, 100*time.Millisecond)
+	defer wsCancel()
+	err := wsjson.Write(writeCtx, vc.ws, vc.config)
+	if err != nil {
+		fmt.Println("error writing data to websocket ")
+	}
+}
+
+func (vc *VoskCommunication) FormatWebsocketToJson(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
 	defer close(messageChan)
 	defer close(errorChan)
-	defer close(doneChan)
-
+	defer func() {
+		if r := recover(); r != nil {
+			// Ignore "send on closed channel" panic
+			fmt.Println("Recovered from panic in FormatWebsocketToJson:", r)
+		}
+	}()
 	for {
-		var msg any
-		err := wsjson.Read(vc.ctx, vc.ws, &msg)
-		if err != nil {
-			errorChan <- err
+		select {
+		case <-stopChan:
+			return
+		case <-vc.ctx.Done():
+			return
+		default:
+			var msg any
+			err := wsjson.Read(vc.ctx, vc.ws, &msg)
+			fmt.Println(msg)
+			if err != nil {
+				fmt.Println("err reading from websocket")
+				errorChan <- err
+				return
+			}
+			messageChan <- msg
+		}
+	}
+}
+
+func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
+	for {
+		select {
+		case msg := <-messageChan:
+			fmt.Println("Received message from Vosk:")
+			fmt.Printf("  %+v\n", msg)
+		case err := <-errorChan:
+			fmt.Printf("WebSocket error: %v\n", err)
+			return
+		case <-stopChan:
+			fmt.Println("Stopping message handler")
 			return
 		}
+	}
+}
+
+func (vc *VoskCommunication) RecordAudioTest(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
+	defer func() {
+		// Close channels safely
 		select {
-		case messageChan <- msg:
-		case <-doneChan:
+		case <-stopChan:
+			// Already closed, do nothing
+		default:
+			close(stopChan)
+		}
+	}()
+	for {
+		select {
+		case <-vc.ctx.Done():
 			return
+		case <-stopChan:
+			return
+		default:
+			err := vc.stream.Read()
+			if err != nil {
+				select {
+				case errorChan <- err:
+					// Error sent
+				case <-vc.ctx.Done():
+					// Context cancelled while trying to send error
+				}
+				return
+			}
+			if len(vc.audioBuffer) >= 160 {
+				audioBytes := make([]byte, len(vc.audioBuffer)*2)
+				for i, sample := range vc.audioBuffer {
+					audioBytes[i*2] = byte(sample)
+					audioBytes[i*2+1] = byte(sample >> 8)
+				}
+				err := vc.ws.Write(vc.ctx, websocket.MessageBinary, audioBytes)
+				if err != nil {
+					break
+				}
+			}
+
 		}
 	}
 }
