@@ -8,7 +8,7 @@ require (
 	github.com/kelindar/search v0.4.0
 	github.com/olebedev/when v1.1.0
 	github.com/qdrant/go-client v1.16.2
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.44
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.46
 	golang.org/x/oauth2 v0.34.0
 	google.golang.org/api v0.257.0
 )
