@@ -68,7 +68,7 @@ func (as *AudioService) StartRecord() {
 			"sample_rate": 16000.0, // Vosk expects 16kHz
 		},
 	}
-	as.vc = audio.InitVoskCommunication(as.ctx, ws, as.stream, as.audioSample, config, as.App)
+	as.vc = audio.InitVoskCommunication(as.ctx, ws, as.stream, as.audioSample, config)
 	as.vc.StartVoskCommunication()
 
 	go as.vc.RecordAudioTest(messageChan, errorChan, as.stop)

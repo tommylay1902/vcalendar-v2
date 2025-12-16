@@ -12,7 +12,6 @@ import (
 	"github.com/coder/websocket/wsjson"
 	"github.com/gordonklaus/portaudio"
 	"github.com/olebedev/when"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type VoskCommunication struct {
@@ -25,8 +24,8 @@ type VoskCommunication struct {
 	qc          *model.QdrantClient
 }
 
-func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any, app *application.App) *VoskCommunication {
-	gc, err := model.InitializeClientGC(app)
+func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any) *VoskCommunication {
+	gc, err := model.InitializeClientGC()
 	if err != nil {
 		fmt.Println("error initalizing Google Calendar client")
 		panic(err)

@@ -19,10 +19,9 @@ import (
 type GcClient struct {
 	gcService  *calendar.Service
 	httpClient *http.Client
-	app        *application.App
 }
 
-func InitializeClientGC(app *application.App) (*GcClient, error) {
+func InitializeClientGC() (*GcClient, error) {
 	ctx := context.Background()
 	b, err := os.ReadFile("client_secret.json")
 	if err != nil {
@@ -36,9 +35,7 @@ func InitializeClientGC(app *application.App) (*GcClient, error) {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	gc := GcClient{
-		app: app,
-	}
+	gc := GcClient{}
 
 	client := gc.getClient(config)
 	gc.httpClient = client
@@ -108,7 +105,9 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 // Request a token from the web, then returns the retrieved token.
 func (gc *GcClient) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	err := gc.app.Browser.OpenURL(authURL)
+
+	app := application.Get()
+	err := app.Browser.OpenURL(authURL)
 	if err != nil {
 		fmt.Println("error opening browser")
 		panic(err)

@@ -16,8 +16,8 @@ function RootComponent() {
           }}
           activeOptions={{ exact: true }}
         >
-          Home
-        </Link>{" "}
+          Dashboard
+        </Link>
       </div>
       <hr />
       <Outlet />

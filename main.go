@@ -34,7 +34,9 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "vcalendar-v2",
 		Description: "Organize and manipulate your calendar with STT easily",
-		Services:    []application.Service{},
+		Services: []application.Service{
+			application.NewService(&service.AudioService{}),
+		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 		},
@@ -58,10 +60,6 @@ func main() {
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
 	})
-	audioService := &service.AudioService{App: app}
-
-	// Register the service
-	app.RegisterService(application.NewService(audioService))
 
 	err := app.Run()
 	if err != nil {
