@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@tanstack/router-cli": "^1.141.2"
+  },
+  "dependencies": {
+    "@tanstack/router-plugin": "^1.141.2"
+  }
+}

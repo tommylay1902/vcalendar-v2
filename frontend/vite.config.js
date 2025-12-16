@@ -3,9 +3,14 @@ import react from "@vitejs/plugin-react";
 import wails from "@wailsio/runtime/plugins/vite";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
-// https://vitejs.dev/config/
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 export default defineConfig({
-  plugins: [react(), wails("./bindings"), tailwindcss()],
+  plugins: [
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
+    react(),
+    wails("./bindings"),
+    tailwindcss(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

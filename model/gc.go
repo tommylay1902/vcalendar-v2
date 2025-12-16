@@ -39,14 +39,17 @@ func InitializeClientGC(app *application.App) (*GcClient, error) {
 	gc := GcClient{
 		app: app,
 	}
+
 	client := gc.getClient(config)
 	gc.httpClient = client
+
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
 		return nil, err
 	}
 	gc.gcService = srv
+
 	return &gc, nil
 }
 
@@ -119,6 +122,7 @@ func (gc *GcClient) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
+	fmt.Println("success!")
 	return tok
 }
 

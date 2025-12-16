@@ -19,9 +19,6 @@ import (
 var assets embed.FS
 
 func init() {
-	// Register a custom event whose associated data type is string.
-	// This is not required, but the binding generator will pick up registered events
-	// and provide a strongly typed JS/TS API for them.
 }
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -36,7 +33,7 @@ func main() {
 	// init websocket
 	app := application.New(application.Options{
 		Name:        "vcalendar-v2",
-		Description: "A demo of using raw HTML & CSS",
+		Description: "Organize and manipulate your calendar with STT easily",
 		Services:    []application.Service{},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -67,7 +64,6 @@ func main() {
 	app.RegisterService(application.NewService(audioService))
 
 	err := app.Run()
-	// If an error occurred while running the application, log it and exit.
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -6,6 +6,7 @@
   "compilerOptions": {
     "allowJs": true,
     "moduleResolution": "bundler",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
@@ -23,7 +24,8 @@
      */
     "checkJs": false,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "jsx": "react-jsx"
   },
   "include": ["src", "bindings"]
 }
