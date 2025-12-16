@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AudioService } from "../bindings/changeme/service";
-
+import { Button } from "./components/ui/button";
 function App() {
   const [recording, setRecording] = useState(false);
   const startRecording = () => {
@@ -13,13 +13,11 @@ function App() {
     setRecording(false);
   };
   return (
-    <div className="container">
+    <div className="flex min-h-svh flex-col items-center justify-center">
       {!recording ? (
-        <button onClick={startRecording} className="w">
-          Start Recording
-        </button>
+        <Button onClick={startRecording}>Start Recording</Button>
       ) : (
-        <button onClick={stopRecording}>Stop Recording</button>
+        <Button onClick={stopRecording}>Stop Recording</Button>
       )}
     </div>
   );
