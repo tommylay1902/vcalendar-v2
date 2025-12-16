@@ -14,12 +14,11 @@ type QdrantClient struct {
 	embedder *search.Vectorizer
 }
 
-func InitializeQdrantClient() QdrantClient {
+func InitializeQdrantClient() (*QdrantClient, error) {
 	m, err := search.NewVectorizer("./dist/all-minilm-l6-v2-q8_0.gguf", 1)
 	if err != nil {
 		fmt.Println("error setting up embedding client:", err)
-		// handle error
-		panic(err)
+		return nil, err
 	}
 
 	client, err := qdrant.NewClient(&qdrant.Config{
@@ -28,7 +27,7 @@ func InitializeQdrantClient() QdrantClient {
 	})
 	if err != nil {
 		fmt.Println("error setting up qdrant client:", err)
-		panic(err)
+		return nil, err
 	}
 
 	qc := QdrantClient{
@@ -36,7 +35,7 @@ func InitializeQdrantClient() QdrantClient {
 		embedder: m,
 	}
 
-	return qc
+	return &qc, nil
 }
 
 func (c *QdrantClient) GetOperation(text *string) string {

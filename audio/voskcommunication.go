@@ -12,6 +12,7 @@ import (
 	"github.com/coder/websocket/wsjson"
 	"github.com/gordonklaus/portaudio"
 	"github.com/olebedev/when"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type VoskCommunication struct {
@@ -20,15 +21,30 @@ type VoskCommunication struct {
 	stream      *portaudio.Stream
 	audioBuffer []int16
 	config      map[string]any
+	gc          *model.GcClient
+	qc          *model.QdrantClient
 }
 
-func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any) *VoskCommunication {
+func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any, app *application.App) *VoskCommunication {
+	gc, err := model.InitializeClientGC(app)
+	if err != nil {
+		fmt.Println("error initalizing Google Calendar client")
+		panic(err)
+	}
+
+	qc, err := model.InitializeQdrantClient()
+	if err != nil {
+		fmt.Println("error initalizing qc client")
+		panic(err)
+	}
 	return &VoskCommunication{
 		ctx:         ctx,
 		ws:          ws,
 		stream:      stream,
 		audioBuffer: audioBuffer,
 		config:      config,
+		gc:          gc,
+		qc:          qc,
 	}
 }
 
@@ -88,10 +104,8 @@ func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan 
 
 func (vc *VoskCommunication) RecordAudioTest(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
 	defer func() {
-		// Close channels safely
 		select {
 		case <-stopChan:
-			// Already closed, do nothing
 		default:
 			close(stopChan)
 		}
@@ -107,9 +121,7 @@ func (vc *VoskCommunication) RecordAudioTest(messageChan chan any, errorChan cha
 			if err != nil {
 				select {
 				case errorChan <- err:
-					// Error sent
 				case <-vc.ctx.Done():
-					// Context cancelled while trying to send error
 				}
 				return
 			}

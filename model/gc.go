@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
@@ -18,13 +19,15 @@ import (
 type GcClient struct {
 	gcService  *calendar.Service
 	httpClient *http.Client
+	app        *application.App
 }
 
-func InitializeClientGC() GcClient {
+func InitializeClientGC(app *application.App) (*GcClient, error) {
 	ctx := context.Background()
 	b, err := os.ReadFile("client_secret.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
+		return nil, err
 	}
 
 	// If modifying these scopes, delete your previously saved token.json.
@@ -32,17 +35,19 @@ func InitializeClientGC() GcClient {
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	client := getClient(config)
 
+	gc := GcClient{
+		app: app,
+	}
+	client := gc.getClient(config)
+	gc.httpClient = client
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
+		return nil, err
 	}
-
-	return GcClient{
-		gcService:  srv,
-		httpClient: client,
-	}
+	gc.gcService = srv
+	return &gc, nil
 }
 
 func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
@@ -84,25 +89,27 @@ func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
 }
 
 // Retrieve a token, saves the token, then returns the generated client.
-func getClient(config *oauth2.Config) *http.Client {
+func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
 	tokFile := "token.json"
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
-		tok = getTokenFromWeb(config)
+		tok = gc.getTokenFromWeb(config)
 		saveToken(tokFile, tok)
 	}
 	return config.Client(context.Background(), tok)
 }
 
 // Request a token from the web, then returns the retrieved token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+func (gc *GcClient) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
-
+	err := gc.app.Browser.OpenURL(authURL)
+	if err != nil {
+		fmt.Println("error opening browser")
+		panic(err)
+	}
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
 		log.Fatalf("Unable to read authorization code: %v", err)

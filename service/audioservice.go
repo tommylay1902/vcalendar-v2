@@ -10,6 +10,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/gordonklaus/portaudio"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type AudioService struct {
@@ -20,6 +21,7 @@ type AudioService struct {
 	stop        chan struct{}
 	ctx         context.Context
 	cancel      context.CancelFunc
+	App         *application.App
 }
 
 func (as *AudioService) StartRecord() {
@@ -66,8 +68,7 @@ func (as *AudioService) StartRecord() {
 			"sample_rate": 16000.0, // Vosk expects 16kHz
 		},
 	}
-	as.vc = audio.InitVoskCommunication(as.ctx, ws, as.stream, as.audioSample, config)
-
+	as.vc = audio.InitVoskCommunication(as.ctx, ws, as.stream, as.audioSample, config, as.App)
 	as.vc.StartVoskCommunication()
 
 	go as.vc.RecordAudioTest(messageChan, errorChan, as.stop)
