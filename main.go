@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"log"
 
+	"changeme/model"
 	"changeme/service"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -19,6 +20,7 @@ import (
 var assets embed.FS
 
 func init() {
+	application.RegisterEvent[model.GoogleAuth]("vcalendar-v2:token-needed")
 }
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -44,7 +46,6 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
-
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
 	// 'Mac' options tailor the window when running on macOS.

@@ -3,24 +3,39 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import "./styles.css";
 import { routeTree } from "./routeTree.gen";
-// Set up a Router instance
+import { AuthProvider, useAuth } from "./auth";
+
+// Define the router context type matching your AuthContext
+export interface RouterContext {
+  auth: {
+    isAuthenticated: boolean;
+    user: string | null;
+    login: (username: string) => Promise<void>;
+    logout: () => Promise<void>;
+  };
+}
+
+// Create the router with the proper context structure
 const router = createRouter({
   routeTree,
   defaultPreload: "intent",
   scrollRestoration: true,
   context: {
+    // This will be overridden when we render, but needs the right type
     auth: undefined!,
   },
 });
 
-// Register things for typesafety
+// Register for type safety
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
 }
+
 function InnerApp() {
   const auth = useAuth();
+
   return <RouterProvider router={router} context={{ auth }} />;
 }
 
@@ -33,7 +48,7 @@ function App() {
 }
 
 const rootElement = document.getElementById("root");
-if (rootElement != null && !rootElement.innerHTML) {
+if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>

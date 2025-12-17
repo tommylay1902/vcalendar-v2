@@ -78,7 +78,9 @@ func (as *AudioService) StartRecord() {
 
 func (as *AudioService) StopRecord() {
 	// Signal all goroutines to stop
-	close(as.stop)
+	if as.stop != nil {
+		close(as.stop)
+	}
 
 	// Cancel context to propagate cancellation
 	if as.cancel != nil {

@@ -94,11 +94,21 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 	// created automatically when the authorization flow completes for the first
 	// time.
 	tokFile := "token.json"
+
 	tok, err := tokenFromFile(tokFile)
+	app := application.Get()
 	if err != nil {
+		app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
+			TokenNeeded: true,
+		})
 		tok = gc.getTokenFromWeb(config)
 		saveToken(tokFile, tok)
 	}
+
+	app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
+		TokenNeeded: false,
+	})
+
 	return config.Client(context.Background(), tok)
 }
 
@@ -112,6 +122,7 @@ func (gc *GcClient) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		fmt.Println("error opening browser")
 		panic(err)
 	}
+
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
 		log.Fatalf("Unable to read authorization code: %v", err)

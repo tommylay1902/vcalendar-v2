@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as GoogleAuthRouteImport } from './routes/google-auth'
+import { Route as AudioSearchRouteImport } from './routes/audio-search'
 import { Route as IndexRouteImport } from './routes/index'
 
 const GoogleAuthRoute = GoogleAuthRouteImport.update({
   id: '/google-auth',
   path: '/google-auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AudioSearchRoute = AudioSearchRouteImport.update({
+  id: '/audio-search',
+  path: '/audio-search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audio-search': typeof AudioSearchRoute
   '/google-auth': typeof GoogleAuthRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audio-search': typeof AudioSearchRoute
   '/google-auth': typeof GoogleAuthRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audio-search': typeof AudioSearchRoute
   '/google-auth': typeof GoogleAuthRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/google-auth'
+  fullPaths: '/' | '/audio-search' | '/google-auth'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/google-auth'
-  id: '__root__' | '/' | '/google-auth'
+  to: '/' | '/audio-search' | '/google-auth'
+  id: '__root__' | '/' | '/audio-search' | '/google-auth'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AudioSearchRoute: typeof AudioSearchRoute
   GoogleAuthRoute: typeof GoogleAuthRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/google-auth'
       fullPath: '/google-auth'
       preLoaderRoute: typeof GoogleAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audio-search': {
+      id: '/audio-search'
+      path: '/audio-search'
+      fullPath: '/audio-search'
+      preLoaderRoute: typeof AudioSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AudioSearchRoute: AudioSearchRoute,
   GoogleAuthRoute: GoogleAuthRoute,
 }
 export const routeTree = rootRouteImport
