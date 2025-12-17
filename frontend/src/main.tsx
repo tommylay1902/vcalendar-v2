@@ -8,6 +8,9 @@ const router = createRouter({
   routeTree,
   defaultPreload: "intent",
   scrollRestoration: true,
+  context: {
+    auth: undefined!,
+  },
 });
 
 // Register things for typesafety
@@ -16,9 +19,25 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
+function InnerApp() {
+  const auth = useAuth();
+  return <RouterProvider router={router} context={{ auth }} />;
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <InnerApp />
+    </AuthProvider>
+  );
+}
 
 const rootElement = document.getElementById("root");
 if (rootElement != null && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
-  root.render(<RouterProvider router={router} />);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  );
 }
