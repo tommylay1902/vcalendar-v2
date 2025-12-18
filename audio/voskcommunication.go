@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"changeme/model"
+	"vcalendar-v2/model"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"

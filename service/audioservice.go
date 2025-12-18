@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"changeme/audio"
+	"vcalendar-v2/audio"
+	"vcalendar-v2/model"
 
 	"github.com/coder/websocket"
 	"github.com/gordonklaus/portaudio"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type AudioService struct {
@@ -21,7 +20,7 @@ type AudioService struct {
 	stop        chan struct{}
 	ctx         context.Context
 	cancel      context.CancelFunc
-	App         *application.App
+	gc          *model.GcClient
 }
 
 func (as *AudioService) StartRecord() {

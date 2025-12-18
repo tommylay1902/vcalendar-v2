@@ -10,12 +10,12 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<void>}
  */
 export function StartRecord() {
-    return $Call.ByID(3917268417);
+    return $Call.ByID(1278022474);
 }
 
 /**
  * @returns {$CancellablePromise<void>}
  */
 export function StopRecord() {
-    return $Call.ByID(4011409173);
+    return $Call.ByID(3009665032);
 }

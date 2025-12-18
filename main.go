@@ -5,9 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"log"
-
-	"changeme/model"
-	"changeme/service"
+	"vcalendar-v2/model"
+	"vcalendar-v2/service"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -48,26 +47,35 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Linux: application.LinuxOptions{
+			// Add this to disable signal handling
+			ProgramName: "vcalendar-v2",
+		},
 	})
+	gcClient := &model.GcClient{}
 
 	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
-		hasAuth := model.HasAuth()
-		fmt.Println(hasAuth)
+		needsToken := model.HasAuth()
 		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
-			TokenNeeded: false,
+			TokenNeeded: !needsToken,
 		})
-		gcClient, err := model.InitializeClientGC()
-		if err != nil {
-			fmt.Println("error initializing gc client")
-			panic(err)
+		if !needsToken {
+			client, err := model.InitializeClientGC()
+			if err != nil {
+				fmt.Println("error initializing gc client")
+				panic(err)
+			}
+			gcClient = client
+
+		} else {
+			gcClient = gcClient.OpenBrowser()
 		}
-		app.RegisterService(application.NewService(gcClient))
 	})
 
 	app.Event.On("vcalendar-v2:auth-code-token", func(event *application.CustomEvent) {
 		token := event.Data.(model.AuthCodeToken)
-
-		fmt.Println(token.Token)
+		fmt.Println(gcClient)
+		gcClient.AddAuthCode(token.Token)
 	})
 
 	// Create a new window with the necessary options.

@@ -20,12 +20,16 @@ type GcClient struct {
 	gcService  *calendar.Service
 	httpClient *http.Client
 	app        *application.App
+	config     *oauth2.Config
+	tokFile    string
 }
 
 func HasAuth() bool {
 	tokFile := "token.json"
 
 	_, err := tokenFromFile(tokFile)
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	fmt.Println(err != nil)
 	return err != nil
 }
 
@@ -45,6 +49,7 @@ func InitializeClientGC() (*GcClient, error) {
 
 	gc := GcClient{}
 
+	gc.config = config
 	client := gc.getClient(config)
 	gc.httpClient = client
 
@@ -54,8 +59,84 @@ func InitializeClientGC() (*GcClient, error) {
 		return nil, err
 	}
 	gc.gcService = srv
-
+	gc.tokFile = "token.json"
 	return &gc, nil
+}
+
+func (gc *GcClient) OpenBrowser() *GcClient {
+	app := application.Get()
+	fmt.Println("opening browser from native funciton")
+	b, csErr := os.ReadFile("client_secret.json")
+	if csErr != nil {
+		fmt.Println("error reading getting client secret")
+		panic(csErr)
+	}
+	config, cErr := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	if cErr != nil {
+		fmt.Println("error getting config")
+		panic(cErr)
+	}
+
+	gc.config = config
+	fmt.Println(gc.config.Endpoint)
+
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+
+	openBrowserErr := app.Browser.OpenURL(authURL)
+	if openBrowserErr != nil {
+		fmt.Println("error opening browser")
+		panic(openBrowserErr)
+	}
+	return gc
+}
+
+func (gc *GcClient) AddAuthCode(authCode string) error {
+	// Exchange auth code for token
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf("------------------------------%#v\n", err)
+		}
+	}()
+	if gc.config == nil || gc.config.Exchange == nil {
+		fmt.Println("HELLLOIFDOIFDSIFDJDSJEOJEJOE")
+		panic("PANIIICCC")
+	}
+	tok, err := gc.config.Exchange(context.TODO(), authCode)
+	fmt.Println(tok.AccessToken)
+	fmt.Println("TOKENASCECELKJ???")
+	if err != nil {
+		return fmt.Errorf("unable to retrieve token from web: %v", err)
+	}
+
+	// Read client secret
+	b, err := os.ReadFile("client_secret.json")
+	if err != nil {
+		return fmt.Errorf("unable to read client secret file: %v", err)
+	}
+
+	// Create config from JSON
+	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	if err != nil {
+		return fmt.Errorf("unable to parse client secret file: %v", err)
+	}
+	gc.tokFile = "token.json"
+	fmt.Println(gc.tokFile)
+	// Save token first
+	saveToken(gc.tokFile, tok)
+
+	// Get HTTP client with the token
+	client := config.Client(context.TODO(), tok)
+	gc.httpClient = client
+
+	// Create Calendar service
+	srv, err := calendar.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return fmt.Errorf("unable to retrieve Calendar client: %v", err)
+	}
+
+	gc.gcService = srv
+	fmt.Println("Successfully authenticated and created calendar service!")
+	return nil
 }
 
 func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
@@ -101,16 +182,15 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-	tokFile := "token.json"
 
-	tok, err := tokenFromFile(tokFile)
+	tok, err := tokenFromFile(gc.tokFile)
 	app := application.Get()
 	if err != nil {
 		app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
 			TokenNeeded: true,
 		})
 		tok = gc.getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+		saveToken(gc.tokFile, tok)
 	}
 
 	app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
@@ -122,6 +202,7 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 
 // Request a token from the web, then returns the retrieved token.
 func (gc *GcClient) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+	fmt.Println("opening borwser from getTokenFromWeb")
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 
 	app := application.Get()

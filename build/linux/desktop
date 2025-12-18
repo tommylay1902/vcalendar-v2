@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
 Name=My Product
-Comment=A vcalendar-v2 application
+Comment=My Product Description
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/vcalendar-v2 %u
+Exec=/usr/local/bin/ %u
 Terminal=false
 Type=Application
-Icon=vcalendar-v2
+Icon=
 Categories=Utility;
-StartupWMClass=vcalendar-v2
+StartupWMClass=
 
  

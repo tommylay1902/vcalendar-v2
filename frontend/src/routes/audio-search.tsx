@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
-import { AudioService } from "bindings/changeme/service";
+import { AudioService } from "bindings/vcalendar-v2/service";
 import { useState } from "react";
 
 export const Route = createFileRoute("/audio-search")({
