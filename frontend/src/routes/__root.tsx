@@ -10,9 +10,6 @@ import { useEffect } from "react";
 export const Route = createRootRouteWithContext<{
   auth: {
     isAuthenticated: boolean;
-    user: string | null;
-    login: (username: string) => Promise<void>;
-    logout: () => Promise<void>;
   };
 }>()({
   component: RootComponent,

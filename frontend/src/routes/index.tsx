@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Events, Window } from "@wailsio/runtime";
+import { Events } from "@wailsio/runtime";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/")({
@@ -7,12 +7,6 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  useEffect(() => {
-    Events.On("vcalendar-v2:token-needed", (event) => {
-      console.log(event.data);
-    });
-  }, []);
-
   return (
     <div className="p-2">
       <div>

@@ -13,9 +13,6 @@ import { AuthProvider, useAuth } from "./auth";
 export interface RouterContext {
   auth: {
     isAuthenticated: boolean;
-    user: string | null;
-    login: (username: string) => Promise<void>;
-    logout: () => Promise<void>;
   };
 }
 

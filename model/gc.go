@@ -19,6 +19,7 @@ import (
 type GcClient struct {
 	gcService  *calendar.Service
 	httpClient *http.Client
+	app        *application.App
 }
 
 func HasAuth() bool {

@@ -6,6 +6,34 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "@wailsio/runtime";
 
+export class AuthCodeToken {
+    /**
+     * Creates a new AuthCodeToken instance.
+     * @param {Partial<AuthCodeToken>} [$$source = {}] - The source object to create the AuthCodeToken.
+     */
+    constructor($$source = {}) {
+        if (!("Token" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["Token"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new AuthCodeToken instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @returns {AuthCodeToken}
+     */
+    static createFrom($$source = {}) {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new AuthCodeToken(/** @type {Partial<AuthCodeToken>} */($$parsedSource));
+    }
+}
+
 export class GoogleAuth {
     /**
      * Creates a new GoogleAuth instance.

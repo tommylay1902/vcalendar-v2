@@ -12,11 +12,13 @@ import * as model$0 from "../../../../../changeme/model/models.js";
 
 function configure() {
     Object.freeze(Object.assign($Create.Events, {
-        "vcalendar-v2:token-needed": $$createType0,
+        "vcalendar-v2:auth-code-token": $$createType0,
+        "vcalendar-v2:token-needed": $$createType1,
     }));
 }
 
 // Private type creation functions
-const $$createType0 = model$0.GoogleAuth.createFrom;
+const $$createType0 = model$0.AuthCodeToken.createFrom;
+const $$createType1 = model$0.GoogleAuth.createFrom;
 
 configure();

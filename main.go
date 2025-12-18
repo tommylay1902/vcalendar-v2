@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	_ "embed"
+	"fmt"
 	"log"
 
 	"changeme/model"
@@ -21,6 +22,7 @@ import (
 var assets embed.FS
 
 func init() {
+	application.RegisterEvent[model.AuthCodeToken]("vcalendar-v2:auth-code-token")
 	application.RegisterEvent[model.GoogleAuth]("vcalendar-v2:token-needed")
 }
 
@@ -50,9 +52,22 @@ func main() {
 
 	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
 		hasAuth := model.HasAuth()
+		fmt.Println(hasAuth)
 		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
-			TokenNeeded: hasAuth,
+			TokenNeeded: false,
 		})
+		gcClient, err := model.InitializeClientGC()
+		if err != nil {
+			fmt.Println("error initializing gc client")
+			panic(err)
+		}
+		app.RegisterService(application.NewService(gcClient))
+	})
+
+	app.Event.On("vcalendar-v2:auth-code-token", func(event *application.CustomEvent) {
+		token := event.Data.(model.AuthCodeToken)
+
+		fmt.Println(token.Token)
 	})
 
 	// Create a new window with the necessary options.

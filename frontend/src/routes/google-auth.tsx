@@ -1,12 +1,20 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createFileRoute } from "@tanstack/react-router";
-
+import { useState } from "react";
+import { Events } from "@wailsio/runtime";
+import { AuthCodeToken } from "bindings/changeme/model";
 export const Route = createFileRoute("/google-auth")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const [token, setToken] = useState("");
+  const sendToken = () => {
+    const AuthCodeToken = { Token: token };
+    Events.Emit("vcalendar-v2:auth-code-token", AuthCodeToken);
+  };
   return (
     <div className="flex flex-col m-3">
       <h1 className="text-center font-bold mb-1">
@@ -14,7 +22,13 @@ function RouteComponent() {
         Provide google token for authentication
       </h1>
 
-      <Input id="token" placeholder="Google Token" />
+      <Input
+        id="token"
+        placeholder="Google Token"
+        value={token}
+        onChange={(e) => setToken(e.target.value)}
+      />
+      <Button onClick={sendToken}>Submit</Button>
     </div>
   );
 }
