@@ -189,7 +189,7 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 		app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
 			TokenNeeded: true,
 		})
-		tok = gc.getTokenFromWeb(config)
+		gc.tokFile = "token.json"
 		saveToken(gc.tokFile, tok)
 	}
 
@@ -198,31 +198,6 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 	})
 
 	return config.Client(context.Background(), tok)
-}
-
-// Request a token from the web, then returns the retrieved token.
-func (gc *GcClient) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	fmt.Println("opening borwser from getTokenFromWeb")
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-
-	app := application.Get()
-	err := app.Browser.OpenURL(authURL)
-	if err != nil {
-		fmt.Println("error opening browser")
-		panic(err)
-	}
-
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
-	}
-
-	tok, err := config.Exchange(context.TODO(), authCode)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	fmt.Println("success!")
-	return tok
 }
 
 // Retrieves a token from a local file.
