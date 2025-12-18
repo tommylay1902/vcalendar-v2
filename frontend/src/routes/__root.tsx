@@ -1,5 +1,11 @@
-import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import { useAuth } from "@/auth";
+import {
+  Outlet,
+  createRootRouteWithContext,
+  useNavigate,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 // Create root route with context that matches what we pass to RouterProvider
 export const Route = createRootRouteWithContext<{
   auth: {
@@ -13,6 +19,16 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootComponent() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!auth.isAuthenticated) {
+      if (window.location.pathname != "/google-auth") {
+        navigate({ to: "/google-auth" });
+      }
+    }
+  });
+
   return (
     <>
       <Outlet />

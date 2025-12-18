@@ -9,6 +9,7 @@ import (
 	"changeme/service"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Wails uses Go's `embed` package to embed the frontend files into the binary.
@@ -46,6 +47,14 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
+
+	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+		hasAuth := model.HasAuth()
+		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
+			TokenNeeded: hasAuth,
+		})
+	})
+
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
 	// 'Mac' options tailor the window when running on macOS.

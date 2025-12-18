@@ -21,6 +21,13 @@ type GcClient struct {
 	httpClient *http.Client
 }
 
+func HasAuth() bool {
+	tokFile := "token.json"
+
+	_, err := tokenFromFile(tokFile)
+	return err != nil
+}
+
 func InitializeClientGC() (*GcClient, error) {
 	ctx := context.Background()
 	b, err := os.ReadFile("client_secret.json")

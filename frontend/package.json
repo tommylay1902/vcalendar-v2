@@ -12,6 +12,7 @@
     "typegen": "tsx node_modules/@tanstack/router-cli/build/index.js"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-router": "^1.141.2",

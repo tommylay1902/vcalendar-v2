@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import {
+  RouterProvider,
+  createRouter,
+  useNavigate,
+} from "@tanstack/react-router";
 import "./styles.css";
 import { routeTree } from "./routeTree.gen";
 import { AuthProvider, useAuth } from "./auth";
@@ -35,7 +39,6 @@ declare module "@tanstack/react-router" {
 
 function InnerApp() {
   const auth = useAuth();
-
   return <RouterProvider router={router} context={{ auth }} />;
 }
 
