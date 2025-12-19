@@ -23,8 +23,10 @@ function RootComponent() {
       if (window.location.pathname != "/google-auth") {
         navigate({ to: "/google-auth" });
       }
+    } else {
+      navigate({ to: "/" });
     }
-  });
+  }, [auth]);
 
   return (
     <>

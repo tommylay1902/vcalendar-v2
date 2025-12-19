@@ -8,7 +8,7 @@ import {
 import "./styles.css";
 import { routeTree } from "./routeTree.gen";
 import { AuthProvider, useAuth } from "./auth";
-
+import { Events } from "@wailsio/runtime";
 // Define the router context type matching your AuthContext
 export interface RouterContext {
   auth: {
@@ -36,6 +36,7 @@ declare module "@tanstack/react-router" {
 
 function InnerApp() {
   const auth = useAuth();
+  if (auth.isLoading) return <div>loading...</div>;
   return <RouterProvider router={router} context={{ auth }} />;
 }
 

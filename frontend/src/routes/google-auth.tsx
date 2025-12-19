@@ -13,19 +13,10 @@ function RouteComponent() {
   const [token, setToken] = useState("");
   const [authUrl, setAuthUrl] = useState("");
 
-  useEffect(() => {
-    console.log("hello", authUrl);
-    Events.On("vcalendar-v2:auth-url", (event) => {
-      setAuthUrl(event.data);
-      console.log("HELLOOO", authUrl);
-    });
-  }, [authUrl]);
-
   const sendToken = () => {
     const AuthCodeToken = { Token: token };
     Events.Emit("vcalendar-v2:auth-code-token", AuthCodeToken);
   };
-
   return (
     <div className="flex flex-col m-3">
       <h1 className="text-center font-bold mb-1">

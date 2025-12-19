@@ -13,6 +13,8 @@ declare module "@wailsio/runtime" {
     namespace Events {
         interface CustomEvents {
             "vcalendar-v2:auth-code-token": model$0.AuthCodeToken;
+            "vcalendar-v2:auth-loaded": string;
+            "vcalendar-v2:auth-needed": void;
             "vcalendar-v2:token-needed": model$0.GoogleAuth;
         }
     }
