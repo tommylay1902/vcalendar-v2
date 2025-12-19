@@ -9,7 +9,6 @@ import (
 	"vcalendar-v2/service"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Wails uses Go's `embed` package to embed the frontend files into the binary.
@@ -23,6 +22,8 @@ var assets embed.FS
 func init() {
 	application.RegisterEvent[model.AuthCodeToken]("vcalendar-v2:auth-code-token")
 	application.RegisterEvent[model.GoogleAuth]("vcalendar-v2:token-needed")
+	application.RegisterEvent[string]("vcalendar-v2:auth-loaded")
+	application.RegisterEvent[application.Void]("vcalendar-v2:auth-needed")
 }
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -54,12 +55,12 @@ func main() {
 	})
 	gcClient := &model.GcClient{}
 
-	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
-		needsToken := model.HasAuth()
+	app.Event.On("vcalendar-v2:auth-needed", func(e *application.CustomEvent) {
+		isAuthenticated := model.HasAuth()
 		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
-			TokenNeeded: !needsToken,
+			TokenNeeded: isAuthenticated,
 		})
-		if !needsToken {
+		if isAuthenticated {
 			client, err := model.InitializeClientGC()
 			if err != nil {
 				fmt.Println("error initializing gc client")
@@ -74,8 +75,10 @@ func main() {
 
 	app.Event.On("vcalendar-v2:auth-code-token", func(event *application.CustomEvent) {
 		token := event.Data.(model.AuthCodeToken)
-		fmt.Println(gcClient)
 		gcClient.AddAuthCode(token.Token)
+		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
+			TokenNeeded: true,
+		})
 	})
 
 	// Create a new window with the necessary options.

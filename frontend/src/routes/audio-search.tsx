@@ -11,12 +11,12 @@ function RouteComponent() {
   const [recording, setRecording] = useState<boolean>(false);
 
   const toggleRecording = () => {
-    setRecording((prev: boolean) => !prev);
-    if (recording) {
+    if (!recording) {
       AudioService.StartRecord();
     } else {
       AudioService.StopRecord();
     }
+    setRecording((prev: boolean) => !prev);
   };
 
   return (

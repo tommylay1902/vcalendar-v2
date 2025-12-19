@@ -69,13 +69,18 @@ func (as *AudioService) StartRecord() {
 	}
 	as.vc = audio.InitVoskCommunication(as.ctx, ws, as.stream, as.audioSample, config)
 	as.vc.StartVoskCommunication()
-
+	fmt.Println("Start vosk communication completeed")
 	go as.vc.RecordAudioTest(messageChan, errorChan, as.stop)
+	fmt.Println("RecordAudioTest completed") // If you don't see this, it's stuck
 	go as.vc.FormatWebsocketToJson(messageChan, errorChan, as.stop)
+
 	go as.vc.HandleMessage(messageChan, errorChan, as.stop)
 }
 
 func (as *AudioService) StopRecord() {
+	if as.ctx != nil {
+		defer as.ctx.Done()
+	}
 	// Signal all goroutines to stop
 	if as.stop != nil {
 		close(as.stop)

@@ -88,8 +88,7 @@ func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan 
 	for {
 		select {
 		case msg := <-messageChan:
-			fmt.Println("Received message from Vosk:")
-			fmt.Printf("  %+v\n", msg)
+			fmt.Printf("\rReceived message from Vosk: %+v", msg)
 		case err := <-errorChan:
 			fmt.Printf("WebSocket error: %v\n", err)
 			return

@@ -28,9 +28,7 @@ func HasAuth() bool {
 	tokFile := "token.json"
 
 	_, err := tokenFromFile(tokFile)
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	fmt.Println(err != nil)
-	return err != nil
+	return err == nil
 }
 
 func InitializeClientGC() (*GcClient, error) {
@@ -102,8 +100,6 @@ func (gc *GcClient) AddAuthCode(authCode string) error {
 		panic("PANIIICCC")
 	}
 	tok, err := gc.config.Exchange(context.TODO(), authCode)
-	fmt.Println(tok.AccessToken)
-	fmt.Println("TOKENASCECELKJ???")
 	if err != nil {
 		return fmt.Errorf("unable to retrieve token from web: %v", err)
 	}
@@ -182,20 +178,11 @@ func (gc *GcClient) getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-
+	gc.tokFile = "token.json"
 	tok, err := tokenFromFile(gc.tokFile)
-	app := application.Get()
 	if err != nil {
-		app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
-			TokenNeeded: true,
-		})
-		gc.tokFile = "token.json"
 		saveToken(gc.tokFile, tok)
 	}
-
-	app.Event.Emit("vcalendar-v2:token-needed", GoogleAuth{
-		TokenNeeded: false,
-	})
 
 	return config.Client(context.Background(), tok)
 }
