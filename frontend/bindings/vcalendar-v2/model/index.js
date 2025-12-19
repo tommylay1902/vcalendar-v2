@@ -4,5 +4,6 @@
 
 export {
     AuthCodeToken,
-    GoogleAuth
+    GoogleAuth,
+    Transcription
 } from "./models.js";

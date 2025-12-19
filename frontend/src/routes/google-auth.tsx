@@ -17,6 +17,7 @@ function RouteComponent() {
     const AuthCodeToken = { Token: token };
     Events.Emit("vcalendar-v2:auth-code-token", AuthCodeToken);
   };
+
   return (
     <div className="flex flex-col m-3">
       <h1 className="text-center font-bold mb-1">

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"time"
+
 	"vcalendar-v2/model"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 	"github.com/gordonklaus/portaudio"
 	"github.com/olebedev/when"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type VoskCommunication struct {
@@ -73,7 +75,6 @@ func (vc *VoskCommunication) FormatWebsocketToJson(messageChan chan any, errorCh
 		default:
 			var msg any
 			err := wsjson.Read(vc.ctx, vc.ws, &msg)
-			fmt.Println(msg)
 			if err != nil {
 				fmt.Println("err reading from websocket")
 				errorChan <- err
@@ -88,7 +89,24 @@ func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan 
 	for {
 		select {
 		case msg := <-messageChan:
-			fmt.Printf("\rReceived message from Vosk: %+v", msg)
+			// First, type assert msg to map[string]any
+			if m, ok := msg.(map[string]any); ok {
+				if text, ok := m["text"].(string); ok && text != "" {
+					// fmt.Printf("\nFinal: %s\n", text)
+					application.Get().Event.Emit("vcalendar-v2:send-transcription", model.Transcription{
+						Message: text,
+						IsFinal: true,
+					})
+				} else if partial, ok := m["partial"].(string); ok && partial != "" {
+					// fmt.Printf("Listening: %s", partial)
+					application.Get().Event.Emit("vcalendar-v2:send-transcription", model.Transcription{
+						Message: partial,
+						IsFinal: false,
+					})
+				}
+			} else if str, ok := msg.(string); ok {
+				fmt.Printf("Message: %s\n", str)
+			}
 		case err := <-errorChan:
 			fmt.Printf("WebSocket error: %v\n", err)
 			return

@@ -7,3 +7,8 @@ type GoogleAuth struct {
 type AuthCodeToken struct {
 	Token string
 }
+
+type Transcription struct {
+	Message string
+	IsFinal bool
+}

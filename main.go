@@ -3,8 +3,8 @@ package main
 import (
 	"embed"
 	_ "embed"
-	"fmt"
 	"log"
+
 	"vcalendar-v2/model"
 	"vcalendar-v2/service"
 
@@ -24,6 +24,7 @@ func init() {
 	application.RegisterEvent[model.GoogleAuth]("vcalendar-v2:token-needed")
 	application.RegisterEvent[string]("vcalendar-v2:auth-loaded")
 	application.RegisterEvent[application.Void]("vcalendar-v2:auth-needed")
+	application.RegisterEvent[model.Transcription]("vcalendar-v2:send-transcription")
 }
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -54,33 +55,7 @@ func main() {
 		},
 	})
 	gcClient := &model.GcClient{}
-
-	app.Event.On("vcalendar-v2:auth-needed", func(e *application.CustomEvent) {
-		isAuthenticated := model.HasAuth()
-		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
-			TokenNeeded: isAuthenticated,
-		})
-		if isAuthenticated {
-			client, err := model.InitializeClientGC()
-			if err != nil {
-				fmt.Println("error initializing gc client")
-				panic(err)
-			}
-			gcClient = client
-
-		} else {
-			gcClient = gcClient.OpenBrowser()
-		}
-	})
-
-	app.Event.On("vcalendar-v2:auth-code-token", func(event *application.CustomEvent) {
-		token := event.Data.(model.AuthCodeToken)
-		gcClient.AddAuthCode(token.Token)
-		app.Event.Emit("vcalendar-v2:token-needed", model.GoogleAuth{
-			TokenNeeded: true,
-		})
-	})
-
+	setupEvents(app, gcClient)
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
 	// 'Mac' options tailor the window when running on macOS.

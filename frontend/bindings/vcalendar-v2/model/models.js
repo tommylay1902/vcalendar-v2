@@ -61,3 +61,38 @@ export class GoogleAuth {
         return new GoogleAuth(/** @type {Partial<GoogleAuth>} */($$parsedSource));
     }
 }
+
+export class Transcription {
+    /**
+     * Creates a new Transcription instance.
+     * @param {Partial<Transcription>} [$$source = {}] - The source object to create the Transcription.
+     */
+    constructor($$source = {}) {
+        if (!("Message" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["Message"] = "";
+        }
+        if (!("IsFinal" in $$source)) {
+            /**
+             * @member
+             * @type {boolean}
+             */
+            this["IsFinal"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new Transcription instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @returns {Transcription}
+     */
+    static createFrom($$source = {}) {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new Transcription(/** @type {Partial<Transcription>} */($$parsedSource));
+    }
+}
