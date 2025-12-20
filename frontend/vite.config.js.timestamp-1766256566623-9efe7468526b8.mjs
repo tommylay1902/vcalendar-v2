@@ -1,0 +1,26 @@
+// vite.config.js
+import { defineConfig } from "file:///home/tommy/dev/projects/vcalendar-v2/frontend/node_modules/vite/dist/node/index.js";
+import react from "file:///home/tommy/dev/projects/vcalendar-v2/frontend/node_modules/@vitejs/plugin-react/dist/index.js";
+import wails from "file:///home/tommy/dev/projects/vcalendar-v2/frontend/node_modules/@wailsio/runtime/dist/plugins/vite.js";
+import path from "path";
+import tailwindcss from "file:///home/tommy/dev/projects/vcalendar-v2/frontend/node_modules/@tailwindcss/vite/dist/index.mjs";
+import { tanstackRouter } from "file:///home/tommy/dev/projects/vcalendar-v2/node_modules/@tanstack/router-plugin/dist/esm/vite.js";
+var __vite_injected_original_dirname = "/home/tommy/dev/projects/vcalendar-v2/frontend";
+var vite_config_default = defineConfig({
+  plugins: [
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
+    react(),
+    wails("./bindings"),
+    tailwindcss()
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__vite_injected_original_dirname, "./src"),
+      bindings: path.resolve(__vite_injected_original_dirname, "./bindings")
+    }
+  }
+});
+export {
+  vite_config_default as default
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidml0ZS5jb25maWcuanMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9kaXJuYW1lID0gXCIvaG9tZS90b21teS9kZXYvcHJvamVjdHMvdmNhbGVuZGFyLXYyL2Zyb250ZW5kXCI7Y29uc3QgX192aXRlX2luamVjdGVkX29yaWdpbmFsX2ZpbGVuYW1lID0gXCIvaG9tZS90b21teS9kZXYvcHJvamVjdHMvdmNhbGVuZGFyLXYyL2Zyb250ZW5kL3ZpdGUuY29uZmlnLmpzXCI7Y29uc3QgX192aXRlX2luamVjdGVkX29yaWdpbmFsX2ltcG9ydF9tZXRhX3VybCA9IFwiZmlsZTovLy9ob21lL3RvbW15L2Rldi9wcm9qZWN0cy92Y2FsZW5kYXItdjIvZnJvbnRlbmQvdml0ZS5jb25maWcuanNcIjtpbXBvcnQgeyBkZWZpbmVDb25maWcgfSBmcm9tIFwidml0ZVwiO1xuaW1wb3J0IHJlYWN0IGZyb20gXCJAdml0ZWpzL3BsdWdpbi1yZWFjdFwiO1xuaW1wb3J0IHdhaWxzIGZyb20gXCJAd2FpbHNpby9ydW50aW1lL3BsdWdpbnMvdml0ZVwiO1xuaW1wb3J0IHBhdGggZnJvbSBcInBhdGhcIjtcbmltcG9ydCB0YWlsd2luZGNzcyBmcm9tIFwiQHRhaWx3aW5kY3NzL3ZpdGVcIjtcbmltcG9ydCB7IHRhbnN0YWNrUm91dGVyIH0gZnJvbSBcIkB0YW5zdGFjay9yb3V0ZXItcGx1Z2luL3ZpdGVcIjtcbmV4cG9ydCBkZWZhdWx0IGRlZmluZUNvbmZpZyh7XG4gIHBsdWdpbnM6IFtcbiAgICB0YW5zdGFja1JvdXRlcih7IHRhcmdldDogXCJyZWFjdFwiLCBhdXRvQ29kZVNwbGl0dGluZzogdHJ1ZSB9KSxcbiAgICByZWFjdCgpLFxuICAgIHdhaWxzKFwiLi9iaW5kaW5nc1wiKSxcbiAgICB0YWlsd2luZGNzcygpLFxuICBdLFxuICByZXNvbHZlOiB7XG4gICAgYWxpYXM6IHtcbiAgICAgIFwiQFwiOiBwYXRoLnJlc29sdmUoX19kaXJuYW1lLCBcIi4vc3JjXCIpLFxuICAgICAgYmluZGluZ3M6IHBhdGgucmVzb2x2ZShfX2Rpcm5hbWUsIFwiLi9iaW5kaW5nc1wiKSxcbiAgICB9LFxuICB9LFxufSk7XG4iXSwKICAibWFwcGluZ3MiOiAiO0FBQTRULFNBQVMsb0JBQW9CO0FBQ3pWLE9BQU8sV0FBVztBQUNsQixPQUFPLFdBQVc7QUFDbEIsT0FBTyxVQUFVO0FBQ2pCLE9BQU8saUJBQWlCO0FBQ3hCLFNBQVMsc0JBQXNCO0FBTC9CLElBQU0sbUNBQW1DO0FBTXpDLElBQU8sc0JBQVEsYUFBYTtBQUFBLEVBQzFCLFNBQVM7QUFBQSxJQUNQLGVBQWUsRUFBRSxRQUFRLFNBQVMsbUJBQW1CLEtBQUssQ0FBQztBQUFBLElBQzNELE1BQU07QUFBQSxJQUNOLE1BQU0sWUFBWTtBQUFBLElBQ2xCLFlBQVk7QUFBQSxFQUNkO0FBQUEsRUFDQSxTQUFTO0FBQUEsSUFDUCxPQUFPO0FBQUEsTUFDTCxLQUFLLEtBQUssUUFBUSxrQ0FBVyxPQUFPO0FBQUEsTUFDcEMsVUFBVSxLQUFLLFFBQVEsa0NBQVcsWUFBWTtBQUFBLElBQ2hEO0FBQUEsRUFDRjtBQUNGLENBQUM7IiwKICAibmFtZXMiOiBbXQp9Cg==

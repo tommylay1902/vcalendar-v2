@@ -12,39 +12,43 @@ import (
 	"github.com/coder/websocket/wsjson"
 	"github.com/gordonklaus/portaudio"
 	"github.com/olebedev/when"
+	"github.com/olebedev/when/rules/common"
+	"github.com/olebedev/when/rules/en"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type VoskCommunication struct {
-	ctx         context.Context
-	ws          *websocket.Conn
-	stream      *portaudio.Stream
-	audioBuffer []int16
-	config      map[string]any
-	gc          *model.GcClient
-	qc          *model.QdrantClient
+	ctx                 context.Context
+	ws                  *websocket.Conn
+	stream              *portaudio.Stream
+	audioBuffer         []int16
+	config              map[string]any
+	gc                  *model.GcClient
+	qc                  *model.QdrantClient
+	wc                  *when.Parser
+	finalTranscriptChan chan string
 }
 
-func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any) *VoskCommunication {
-	gc, err := model.InitializeClientGC()
-	if err != nil {
-		fmt.Println("error initalizing Google Calendar client")
-		panic(err)
-	}
-
+func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any, gc *model.GcClient) *VoskCommunication {
 	qc, err := model.InitializeQdrantClient()
 	if err != nil {
 		fmt.Println("error initalizing qc client")
 		panic(err)
 	}
+	w := when.New(nil)
+	w.Add(en.All...)
+	w.Add(common.All...)
+
 	return &VoskCommunication{
-		ctx:         ctx,
-		ws:          ws,
-		stream:      stream,
-		audioBuffer: audioBuffer,
-		config:      config,
-		gc:          gc,
-		qc:          qc,
+		ctx:                 ctx,
+		ws:                  ws,
+		stream:              stream,
+		audioBuffer:         audioBuffer,
+		config:              config,
+		gc:                  gc,
+		qc:                  qc,
+		wc:                  w,
+		finalTranscriptChan: make(chan string, 128), // Add buffer size
 	}
 }
 
@@ -97,6 +101,12 @@ func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan 
 						Message: text,
 						IsFinal: true,
 					})
+					select {
+					case vc.finalTranscriptChan <- text:
+					default:
+						// Skip if channel is full
+					}
+					// vc.findOperation(messageChan, errorChan, stopChan)
 				} else if partial, ok := m["partial"].(string); ok && partial != "" {
 					// fmt.Printf("Listening: %s", partial)
 					application.Get().Event.Emit("vcalendar-v2:send-transcription", model.Transcription{
@@ -114,6 +124,52 @@ func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan 
 			fmt.Println("Stopping message handler")
 			return
 		}
+	}
+}
+
+func (vc *VoskCommunication) ProcessTranscripts(stopChan chan struct{}) {
+	for {
+		select {
+		case text := <-vc.finalTranscriptChan:
+			vc.processFinalTranscript(text)
+		case <-stopChan:
+			return
+		}
+	}
+}
+
+func (vc *VoskCommunication) processFinalTranscript(text string) {
+	fmt.Println("Processing:", text)
+
+	// Parse the date from the text
+	r, err := vc.wc.Parse(text, time.Now())
+	if err != nil {
+		fmt.Println("Error parsing date:", err)
+		// Don't panic, just return
+		return
+	}
+
+	var date *time.Time
+	if r == nil {
+		fmt.Println("no matches found")
+	} else {
+		date = &r.Time
+		fmt.Println("Parsed date:", date)
+	}
+	// Get the operation from Qdrant
+	operation := vc.qc.GetOperation(&text)
+	// Execute the operation
+	switch operation {
+	case "List":
+		fmt.Println("Listing events for date:", date)
+		fmt.Println("PRINGING SERVICE")
+		vc.gc.GetEventsForTheDay(date)
+	case "Add":
+		fmt.Println("Creating event...")
+	case "Delete":
+		fmt.Println("Deleting event...")
+	default:
+		fmt.Println("Unknown operation:", operation)
 	}
 }
 
@@ -153,6 +209,47 @@ func (vc *VoskCommunication) RecordAudioTest(messageChan chan any, errorChan cha
 			}
 
 		}
+	}
+}
+
+func (vc *VoskCommunication) findOperation(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
+	fmt.Println("find operation!")
+	select {
+	case msg := <-messageChan:
+		fmt.Println("inside ")
+		finalText := handleVoskMessage(msg)
+		var date *time.Time
+		if finalText != nil {
+			r, err := vc.wc.Parse(*finalText, time.Now())
+			if err != nil {
+				fmt.Println(err.Error)
+				panic(err)
+			}
+			if r == nil {
+				fmt.Println("no matches found")
+			} else {
+				date = &r.Time
+				fmt.Println(date)
+			}
+		}
+
+		operation := vc.qc.GetOperation(finalText)
+		switch operation {
+		case "List":
+			vc.gc.GetEventsForTheDay(date)
+		case "Add":
+			fmt.Println("Creating event...")
+		case "Delete":
+			fmt.Println("Deleting event...")
+		}
+	case err := <-errorChan:
+		if err != nil {
+			log.Printf("WebSocket error: %v", err)
+		}
+	case <-stopChan:
+		return
+	default:
+		// Continue recording
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/kelindar/search"
 	"github.com/qdrant/go-client/qdrant"
@@ -40,20 +41,33 @@ func InitializeQdrantClient() (*QdrantClient, error) {
 
 func (c *QdrantClient) GetOperation(text *string) string {
 	if text != nil {
+
 		embeddedMsg, err := c.embedder.EmbedText(*text)
 		if err != nil {
 			log.Printf("Error embedding text: %v", err)
-			panic(err)
+			return "" // Return empty string instead of panic
 		}
-		result, err := c.qc.Query(context.Background(), &qdrant.QueryPoints{
+
+		// Add timeout context
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		result, err := c.qc.Query(ctx, &qdrant.QueryPoints{
 			CollectionName: "gc_operations",
 			Query:          qdrant.NewQuery(embeddedMsg...),
 			WithPayload:    qdrant.NewWithPayload(true),
 		})
 		if err != nil {
-			fmt.Println("Error querying Qdrant:", err)
-			panic(err)
+			fmt.Printf("Error querying Qdrant: %v\n", err)
+			return "" // Return empty string instead of panic
 		}
+
+		// Check if result is empty
+		if len(result) == 0 {
+			fmt.Println("No results from Qdrant")
+			return ""
+		}
+
 		payload := result[0].GetPayload()
 		if operationValue, exists := payload["operation"]; exists {
 			// The value is a *qdrant.Value - we need to get the string from it
@@ -62,7 +76,7 @@ func (c *QdrantClient) GetOperation(text *string) string {
 			// Check if it has a string value and extract it
 			if qdrantValue.GetStringValue() != "" {
 				operation := qdrantValue.GetStringValue()
-				fmt.Println(operation) // Prints: Delete
+				fmt.Println("Operation found:", operation)
 				return operation
 			}
 		}

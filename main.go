@@ -37,12 +37,11 @@ func main() {
 	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
 	// 'Mac' options tailor the application when running an macOS.
 	// init websocket
+
 	app := application.New(application.Options{
 		Name:        "vcalendar-v2",
 		Description: "Organize and manipulate your calendar with STT easily",
-		Services: []application.Service{
-			application.NewService(&service.AudioService{}),
-		},
+		Services:    []application.Service{},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 		},
@@ -55,14 +54,19 @@ func main() {
 		},
 	})
 	gcClient := &model.GcClient{}
-	setupEvents(app, gcClient)
-	// Create a new window with the necessary options.
+	as := &service.AudioService{
+		Gc: gcClient,
+	}
+
+	setupEvents(app, gcClient, as)
+
+	app.RegisterService(application.NewService(as))
 	// 'Title' is the title of the window.
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Window 1",
+		Title: "Window ",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,

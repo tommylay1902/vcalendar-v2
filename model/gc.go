@@ -153,11 +153,14 @@ func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
 
 	fmt.Printf("End of day: %s\n", endOfDay)
 
+	fmt.Println(gc.gcService)
 	events, err := gc.gcService.Events.List("primary").ShowDeleted(false).
 		SingleEvents(true).TimeMin(now.Format(time.RFC3339)).TimeMax(endOfDay.Format(time.RFC3339)).
 		EventTypes("default").MaxResults(10).OrderBy("startTime").Do()
 	if err != nil {
+		fmt.Println("error tyring to query gc service")
 		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
+		panic(err)
 	}
 	fmt.Println("Upcoming events:")
 	if len(events.Items) == 0 {
