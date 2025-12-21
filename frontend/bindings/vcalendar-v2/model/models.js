@@ -44,6 +44,20 @@ export class CalendarEvents {
      * @param {Partial<CalendarEvents>} [$$source = {}] - The source object to create the CalendarEvents.
      */
     constructor($$source = {}) {
+        if (!("Summary" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["Summary"] = "";
+        }
+        if (!("Description" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["Description"] = "";
+        }
         if (!("events" in $$source)) {
             /**
              * @member
@@ -61,10 +75,10 @@ export class CalendarEvents {
      * @returns {CalendarEvents}
      */
     static createFrom($$source = {}) {
-        const $$createField0_0 = $$createType0;
+        const $$createField2_0 = $$createType0;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("events" in $$parsedSource) {
-            $$parsedSource["events"] = $$createField0_0($$parsedSource["events"]);
+            $$parsedSource["events"] = $$createField2_0($$parsedSource["events"]);
         }
         return new CalendarEvents(/** @type {Partial<CalendarEvents>} */($$parsedSource));
     }

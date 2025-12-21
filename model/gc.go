@@ -135,7 +135,7 @@ func (gc *GcClient) AddAuthCode(authCode string) error {
 	return nil
 }
 
-func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
+func (gc *GcClient) GetEventsForTheDay(date *time.Time) *calendar.Events {
 	var now time.Time
 	var endOfDay time.Time
 	if date == nil {
@@ -144,16 +144,10 @@ func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
 		endOfDay = time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 
 	} else {
-		fmt.Println(date)
 		now = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 		endOfDay = time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 	}
 
-	fmt.Printf("Current time: %s\n", now)
-
-	fmt.Printf("End of day: %s\n", endOfDay)
-
-	fmt.Println(gc.gcService)
 	events, err := gc.gcService.Events.List("primary").ShowDeleted(false).
 		SingleEvents(true).TimeMin(now.Format(time.RFC3339)).TimeMax(endOfDay.Format(time.RFC3339)).
 		EventTypes("default").MaxResults(10).OrderBy("startTime").Do()
@@ -162,18 +156,7 @@ func (gc *GcClient) GetEventsForTheDay(date *time.Time) {
 		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
 		panic(err)
 	}
-	fmt.Println("Upcoming events:")
-	if len(events.Items) == 0 {
-		fmt.Println("No upcoming events found.")
-	} else {
-		for _, item := range events.Items {
-			date := item.Start.DateTime
-			if date == "" {
-				date = item.Start.Date
-			}
-			fmt.Printf("%v (%v)\n", item.Summary, date)
-		}
-	}
+	return events
 }
 
 // Retrieve a token, saves the token, then returns the generated client.

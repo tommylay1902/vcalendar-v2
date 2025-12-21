@@ -25,6 +25,7 @@ func init() {
 	application.RegisterEvent[string]("vcalendar-v2:auth-loaded")
 	application.RegisterEvent[application.Void]("vcalendar-v2:auth-needed")
 	application.RegisterEvent[model.Transcription]("vcalendar-v2:send-transcription")
+	application.RegisterEvent[model.CalendarEvents]("vcalendar-v2:send-events")
 }
 
 // main function serves as the application's entry point. It initializes the application, creates a window,

@@ -161,9 +161,15 @@ func (vc *VoskCommunication) processFinalTranscript(text string) {
 	// Execute the operation
 	switch operation {
 	case "List":
-		fmt.Println("Listing events for date:", date)
-		fmt.Println("PRINGING SERVICE")
-		vc.gc.GetEventsForTheDay(date)
+
+		events := vc.gc.GetEventsForTheDay(date)
+		if events != nil {
+			application.Get().Event.Emit("vcalendar-v2:send-events", model.CalendarEvents{
+				Summary:     events.Summary,
+				Description: events.Description,
+				Events:      events.Items,
+			})
+		}
 	case "Add":
 		fmt.Println("Creating event...")
 	case "Delete":
