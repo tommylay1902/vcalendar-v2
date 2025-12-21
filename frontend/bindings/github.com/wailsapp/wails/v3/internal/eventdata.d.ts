@@ -15,6 +15,7 @@ declare module "@wailsio/runtime" {
             "vcalendar-v2:auth-code-token": model$0.AuthCodeToken;
             "vcalendar-v2:auth-loaded": string;
             "vcalendar-v2:auth-needed": void;
+            "vcalendar-v2:send-events": model$0.CalendarEvents;
             "vcalendar-v2:send-transcription": model$0.Transcription;
             "vcalendar-v2:token-needed": model$0.GoogleAuth;
         }

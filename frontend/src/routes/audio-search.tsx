@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
 import { AudioService } from "bindings/vcalendar-v2/service";
 import { useEffect, useState } from "react";
+import { CalendarEvents } from "bindings/vcalendar-v2/model";
 import { Events } from "@wailsio/runtime";
 export const Route = createFileRoute("/audio-search")({
   component: RouteComponent,
@@ -21,6 +22,10 @@ function RouteComponent() {
   };
 
   useEffect(() => {
+    Events.On("vcalendar-v2:send-events", (event) => {
+      event.data.events.forEach((e) => {});
+    });
+
     Events.On("vcalendar-v2:send-transcription", (event) => {
       if (event.data.IsFinal) {
         setFinal("final: " + event.data.Message);

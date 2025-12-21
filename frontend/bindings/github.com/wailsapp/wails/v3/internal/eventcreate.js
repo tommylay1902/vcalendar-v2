@@ -13,14 +13,16 @@ import * as model$0 from "../../../../../vcalendar-v2/model/models.js";
 function configure() {
     Object.freeze(Object.assign($Create.Events, {
         "vcalendar-v2:auth-code-token": $$createType0,
-        "vcalendar-v2:send-transcription": $$createType1,
-        "vcalendar-v2:token-needed": $$createType2,
+        "vcalendar-v2:send-events": $$createType1,
+        "vcalendar-v2:send-transcription": $$createType2,
+        "vcalendar-v2:token-needed": $$createType3,
     }));
 }
 
 // Private type creation functions
 const $$createType0 = model$0.AuthCodeToken.createFrom;
-const $$createType1 = model$0.Transcription.createFrom;
-const $$createType2 = model$0.GoogleAuth.createFrom;
+const $$createType1 = model$0.CalendarEvents.createFrom;
+const $$createType2 = model$0.Transcription.createFrom;
+const $$createType3 = model$0.GoogleAuth.createFrom;
 
 configure();

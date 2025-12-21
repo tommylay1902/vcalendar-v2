@@ -6,6 +6,10 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as calendar$0 from "../../google.golang.org/api/calendar/v3/models.js";
+
 export class AuthCodeToken {
     /**
      * Creates a new AuthCodeToken instance.
@@ -31,6 +35,38 @@ export class AuthCodeToken {
     static createFrom($$source = {}) {
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         return new AuthCodeToken(/** @type {Partial<AuthCodeToken>} */($$parsedSource));
+    }
+}
+
+export class CalendarEvents {
+    /**
+     * Creates a new CalendarEvents instance.
+     * @param {Partial<CalendarEvents>} [$$source = {}] - The source object to create the CalendarEvents.
+     */
+    constructor($$source = {}) {
+        if (!("events" in $$source)) {
+            /**
+             * @member
+             * @type {(calendar$0.Event | null)[]}
+             */
+            this["events"] = [];
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new CalendarEvents instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @returns {CalendarEvents}
+     */
+    static createFrom($$source = {}) {
+        const $$createField0_0 = $$createType0;
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("events" in $$parsedSource) {
+            $$parsedSource["events"] = $$createField0_0($$parsedSource["events"]);
+        }
+        return new CalendarEvents(/** @type {Partial<CalendarEvents>} */($$parsedSource));
     }
 }
 
@@ -96,3 +132,6 @@ export class Transcription {
         return new Transcription(/** @type {Partial<Transcription>} */($$parsedSource));
     }
 }
+
+// Private type creation functions
+const $$createType0 = $Create.Array($Create.Any);
