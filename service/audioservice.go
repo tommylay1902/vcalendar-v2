@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"time"
-
 	"vcalendar-v2/audio"
 	"vcalendar-v2/model"
 
@@ -86,30 +85,39 @@ func (as *AudioService) StartRecord() {
 func (as *AudioService) StopRecord() {
 	fmt.Println("Stopping audio service...")
 
-	// Cancel the context first
+	// 1. Close the stop channel FIRST to signal all goroutines
+	if as.stop != nil {
+		close(as.stop)
+		// Wait a moment for goroutines to receive the signal
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	// 2. Cancel the context
 	if as.cancel != nil {
 		as.cancel()
 	}
 
-	// Close the stop channel to signal all goroutines
-	if as.stop != nil {
-		close(as.stop)
+	// 3. Close WebSocket (this will unblock wsjson.Read)
+	if as.ws != nil {
+		// Send EOF in a goroutine with timeout
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			defer cancel()
+			as.ws.Write(ctx, websocket.MessageText, []byte(`{"eof":1}`))
+		}()
+
+		as.ws.Close(websocket.StatusNormalClosure, "stopping")
+		as.ws = nil
 	}
 
-	// Stop the audio stream
+	// 4. Stop the audio stream
 	if as.stream != nil {
 		as.stream.Stop()
 		as.stream.Close()
 		as.stream = nil
 	}
 
-	// Close WebSocket
-	if as.ws != nil {
-		as.ws.Close(websocket.StatusNormalClosure, "stopping")
-		as.ws = nil
-	}
-
-	// Terminate portaudio
+	// 5. Terminate portaudio
 	portaudio.Terminate()
 
 	fmt.Println("Audio service stopped")

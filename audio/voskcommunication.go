@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-
 	"vcalendar-v2/model"
 
 	"github.com/coder/websocket"
@@ -62,11 +61,11 @@ func (vc *VoskCommunication) StartVoskCommunication() {
 }
 
 func (vc *VoskCommunication) FormatWebsocketToJson(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
-	defer close(messageChan)
-	defer close(errorChan)
 	defer func() {
+		// Close channels safely
+		closeSafe(messageChan)
+		closeSafe(errorChan)
 		if r := recover(); r != nil {
-			// Ignore "send on closed channel" panic
 			fmt.Println("Recovered from panic in FormatWebsocketToJson:", r)
 		}
 	}()
@@ -81,12 +80,36 @@ func (vc *VoskCommunication) FormatWebsocketToJson(messageChan chan any, errorCh
 			err := wsjson.Read(vc.ctx, vc.ws, &msg)
 			if err != nil {
 				fmt.Println("err reading from websocket")
-				errorChan <- err
-				return
+				if !isContextError(err) {
+					select {
+					case errorChan <- err:
+					case <-vc.ctx.Done():
+					case <-stopChan:
+					}
+				}
 			}
 			messageChan <- msg
 		}
 	}
+}
+
+func closeSafe[T any](ch chan T) {
+	defer func() { recover() }()
+	select {
+	case _, ok := <-ch:
+		if !ok {
+			return // Already closed
+		}
+	default:
+		close(ch)
+	}
+}
+
+func isContextError(err error) bool {
+	return err == context.Canceled ||
+		err == context.DeadlineExceeded ||
+		err.Error() == "context canceled" ||
+		err.Error() == "context deadline exceeded"
 }
 
 func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
@@ -181,39 +204,49 @@ func (vc *VoskCommunication) processFinalTranscript(text string) {
 
 func (vc *VoskCommunication) RecordAudioTest(messageChan chan any, errorChan chan error, stopChan chan struct{}) {
 	defer func() {
-		select {
-		case <-stopChan:
-		default:
-			close(stopChan)
+		// Don't close stopChan here - let the service handle it
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in RecordAudioTest:", r)
 		}
 	}()
+
 	for {
 		select {
 		case <-vc.ctx.Done():
+			fmt.Println("RecordAudioTest: context done")
 			return
 		case <-stopChan:
+			fmt.Println("RecordAudioTest: stop channel closed")
 			return
 		default:
 			err := vc.stream.Read()
 			if err != nil {
-				select {
-				case errorChan <- err:
-				case <-vc.ctx.Done():
-				}
+				fmt.Printf("RecordAudioTest: stream read error: %v\n", err)
+				// Don't send to errorChan - just exit
 				return
 			}
+
 			if len(vc.audioBuffer) >= 160 {
 				audioBytes := make([]byte, len(vc.audioBuffer)*2)
 				for i, sample := range vc.audioBuffer {
 					audioBytes[i*2] = byte(sample)
 					audioBytes[i*2+1] = byte(sample >> 8)
 				}
-				err := vc.ws.Write(vc.ctx, websocket.MessageBinary, audioBytes)
-				if err != nil {
-					break
+
+				// Check context before writing
+				select {
+				case <-vc.ctx.Done():
+					return
+				case <-stopChan:
+					return
+				default:
+					err := vc.ws.Write(vc.ctx, websocket.MessageBinary, audioBytes)
+					if err != nil {
+						fmt.Printf("RecordAudioTest: write error: %v\n", err)
+						return
+					}
 				}
 			}
-
 		}
 	}
 }
