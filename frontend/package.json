@@ -12,6 +12,7 @@
     "typegen": "tsx node_modules/@tanstack/router-cli/build/index.js"
   },
   "dependencies": {
+    "@audiowave/react": "^0.6.2",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "^4.1.18",
@@ -20,7 +21,9 @@
     "@wailsio/runtime": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.561.0",
+    "luxon": "^3.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.4.0",
@@ -30,6 +33,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@types/luxon": "^3.7.1",
     "@types/node": "^25.0.2",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",

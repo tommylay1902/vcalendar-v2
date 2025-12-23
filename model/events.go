@@ -1,6 +1,10 @@
 package model
 
-import "google.golang.org/api/calendar/v3"
+import (
+	"time"
+
+	"google.golang.org/api/calendar/v3"
+)
 
 type GoogleAuth struct {
 	TokenNeeded bool
@@ -20,6 +24,7 @@ type CalendarEventRequest struct {
 }
 
 type CalendarEvents struct {
+	Date        *time.Time
 	Summary     string
 	Description string
 	Events      []*calendar.Event `json:"events"`

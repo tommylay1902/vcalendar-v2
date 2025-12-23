@@ -9,6 +9,9 @@ import { Create as $Create } from "@wailsio/runtime";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as calendar$0 from "../../google.golang.org/api/calendar/v3/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as time$0 from "../../time/models.js";
 
 export class AuthCodeToken {
     /**
@@ -44,6 +47,13 @@ export class CalendarEvents {
      * @param {Partial<CalendarEvents>} [$$source = {}] - The source object to create the CalendarEvents.
      */
     constructor($$source = {}) {
+        if (!("Date" in $$source)) {
+            /**
+             * @member
+             * @type {time$0.Time | null}
+             */
+            this["Date"] = null;
+        }
         if (!("Summary" in $$source)) {
             /**
              * @member
@@ -75,10 +85,10 @@ export class CalendarEvents {
      * @returns {CalendarEvents}
      */
     static createFrom($$source = {}) {
-        const $$createField2_0 = $$createType0;
+        const $$createField3_0 = $$createType0;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("events" in $$parsedSource) {
-            $$parsedSource["events"] = $$createField2_0($$parsedSource["events"]);
+            $$parsedSource["events"] = $$createField3_0($$parsedSource["events"]);
         }
         return new CalendarEvents(/** @type {Partial<CalendarEvents>} */($$parsedSource));
     }

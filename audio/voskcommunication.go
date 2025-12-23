@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+
 	"vcalendar-v2/model"
 
 	"github.com/coder/websocket"
@@ -26,6 +27,7 @@ type VoskCommunication struct {
 	qc                  *model.QdrantClient
 	wc                  *when.Parser
 	finalTranscriptChan chan string
+	previousMessage     string
 }
 
 func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *portaudio.Stream, audioBuffer []int16, config map[string]any, gc *model.GcClient) *VoskCommunication {
@@ -48,6 +50,7 @@ func InitVoskCommunication(ctx context.Context, ws *websocket.Conn, stream *port
 		qc:                  qc,
 		wc:                  w,
 		finalTranscriptChan: make(chan string, 128), // Add buffer size
+		previousMessage:     "",
 	}
 }
 
@@ -131,11 +134,13 @@ func (vc *VoskCommunication) HandleMessage(messageChan chan any, errorChan chan 
 					}
 					// vc.findOperation(messageChan, errorChan, stopChan)
 				} else if partial, ok := m["partial"].(string); ok && partial != "" {
-					// fmt.Printf("Listening: %s", partial)
-					application.Get().Event.Emit("vcalendar-v2:send-transcription", model.Transcription{
-						Message: partial,
-						IsFinal: false,
-					})
+					if len(vc.previousMessage) != len(partial) || (vc.previousMessage == "" && len(vc.previousMessage) != len(partial)) {
+						vc.previousMessage = partial
+						application.Get().Event.Emit("vcalendar-v2:send-transcription", model.Transcription{
+							Message: partial,
+							IsFinal: false,
+						})
+					}
 				}
 			} else if str, ok := msg.(string); ok {
 				fmt.Printf("Message: %s\n", str)
@@ -184,10 +189,10 @@ func (vc *VoskCommunication) processFinalTranscript(text string) {
 	// Execute the operation
 	switch operation {
 	case "List":
-
 		events := vc.gc.GetEventsForTheDay(date)
 		if events != nil {
 			application.Get().Event.Emit("vcalendar-v2:send-events", model.CalendarEvents{
+				Date:        date,
 				Summary:     events.Summary,
 				Description: events.Description,
 				Events:      events.Items,
@@ -232,14 +237,16 @@ func (vc *VoskCommunication) RecordAudioTest(messageChan chan any, errorChan cha
 					audioBytes[i*2] = byte(sample)
 					audioBytes[i*2+1] = byte(sample >> 8)
 				}
-
+				go application.Get().Event.Emit("vcalendar-v2:send-audio-bytes", audioBytes)
 				// Check context before writing
 				select {
 				case <-vc.ctx.Done():
 					return
 				case <-stopChan:
 					return
+
 				default:
+
 					err := vc.ws.Write(vc.ctx, websocket.MessageBinary, audioBytes)
 					if err != nil {
 						fmt.Printf("RecordAudioTest: write error: %v\n", err)
@@ -275,6 +282,7 @@ func (vc *VoskCommunication) findOperation(messageChan chan any, errorChan chan 
 		operation := vc.qc.GetOperation(finalText)
 		switch operation {
 		case "List":
+			fmt.Println("getting events...")
 			vc.gc.GetEventsForTheDay(date)
 		case "Add":
 			fmt.Println("Creating event...")
