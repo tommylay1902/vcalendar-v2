@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Events } from "@wailsio/runtime";
-import { AuthCodeToken } from "bindings/vcalendar-v2/model";
+
 export const Route = createFileRoute("/google-auth")({
   component: RouteComponent,
 });

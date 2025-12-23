@@ -22,12 +22,10 @@ const router = createRouter({
   defaultPreload: "intent",
   scrollRestoration: true,
   context: {
-    // This will be overridden when we render, but needs the right type
     auth: undefined!,
   },
 });
 
-// Register for type safety
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

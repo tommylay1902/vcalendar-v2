@@ -1,11 +1,14 @@
 import { AudioService } from "bindings/vcalendar-v2/service";
 import { useEffect, useState } from "react";
 import { Events } from "@wailsio/runtime";
+import { WailsEvent } from "node_modules/@wailsio/runtime/types/events";
 
 function useRecord() {
   const [recording, setRecording] = useState<boolean>(false);
   const [transcript, setTranscript] = useState<string[]>([]);
   const [final, setFinal] = useState<string | null>(null);
+  const [events, setEvents] =
+    useState<WailsEvent<"vcalendar-v2:send-events"> | null>(null);
   const toggleRecording = () => {
     if (!recording) {
       AudioService.StartRecord();
@@ -17,10 +20,7 @@ function useRecord() {
 
   useEffect(() => {
     Events.On("vcalendar-v2:send-events", (event) => {
-      console.log(event.data);
-      // event.data.events.forEach((e) => {
-      //   console.table(e);
-      // });
+      setEvents(event);
     });
 
     Events.On("vcalendar-v2:send-transcription", (event) => {
@@ -67,12 +67,10 @@ function useRecord() {
   }, []);
   return {
     recording,
-    setRecording,
     transcript,
-    setTranscript,
     final,
-    setFinal,
     toggleRecording,
+    events,
   };
 }
 export default useRecord;

@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
-// Create root route with context that matches what we pass to RouterProvider
+
 export const Route = createRootRouteWithContext<{
   auth: {
     isAuthenticated: boolean;
